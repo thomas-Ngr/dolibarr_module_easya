@@ -1,0 +1,9 @@
+# Dolibarr language file - en_US - easya
+CHARSET=UTF-8
+Module501000Name = easya
+Module501000Desc = Specific module for easya
+
+#######################################################################
+# Configuration admin
+#######################################################################
+easyaSetup                            = easya module configuration
