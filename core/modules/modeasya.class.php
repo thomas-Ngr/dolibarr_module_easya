@@ -156,6 +156,25 @@ class modeasya extends DolibarrModules
         $this->const [$r] [5] = 'all';
         $this->const [$r] [6] = 1;
 
+		/// InfraSpackPlus generates HTTP 500 errors
+        $r ++;
+        $this->const [$r] [0] = "INFRASPACKPLUS_DISABLED_CORE_CHANGE";
+        $this->const [$r] [1] = "chaine";
+        $this->const [$r] [2] = "1";
+        $this->const [$r] [3] = "InfraSPackPlus - Désactivation application core change Dolibarr";
+        $this->const [$r] [4] = 1;
+        $this->const [$r] [5] = 'all';
+        $this->const [$r] [6] = 1;
+
+        $r ++;
+        $this->const [$r] [0] = "INFRASPACKPLUS_DISABLED_MODULE_CHANGE";
+        $this->const [$r] [1] = "chaine";
+        $this->const [$r] [2] = "1";
+        $this->const [$r] [3] = "InfraSPackPlus - Désactivation application core change module";
+        $this->const [$r] [4] = 1;
+        $this->const [$r] [5] = 'all';
+        $this->const [$r] [6] = 1;
+
 		// Array to add new pages in new tabs
 		// Example: $this->tabs = array('objecttype:+tabname1:Title1:mylangfile@mymodule:$user->rights->mymodule->read:/mymodule/mynewtab1.php?id=__ID__',  					// To add a new tab identified by code tabname1
         //                              'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@mymodule:$user->rights->othermodule->read:/mymodule/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
@@ -321,6 +340,11 @@ class modeasya extends DolibarrModules
 	 */
 	public function remove($options = '')
 	{
+
+		// InfraS
+		dolibarr_del_const($this->db,'INFRASPACKPLUS_DISABLED_CORE_CHANGE');
+		dolibarr_del_const($this->db,'INFRASPACKPLUS_DISABLED_MODULE_CHANGE');
+
 		return $this->_remove($sql, $options);
 	}
 
