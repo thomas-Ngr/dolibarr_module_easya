@@ -204,6 +204,16 @@ class modeasya extends DolibarrModules
         $this->const [$r] [5] = 'all';
         $this->const [$r] [6] = 1;
 
+        // Show module in list instead of kanban view
+        $r ++;
+        $this->const [$r] [0] = "MAIN_MODULE_SETUP_ON_LIST_BY_DEFAULT";
+        $this->const [$r] [1] = "chaine";
+        $this->const [$r] [2] = "1";
+        $this->const [$r] [3] = 0;
+        $this->const [$r] [4] = 1;
+        $this->const [$r] [5] = 'all';
+        $this->const [$r] [6] = 1;
+
 		// Array to add new pages in new tabs
 		// Example: $this->tabs = array('objecttype:+tabname1:Title1:mylangfile@mymodule:$user->rights->mymodule->read:/mymodule/mynewtab1.php?id=__ID__',  					// To add a new tab identified by code tabname1
         //                              'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@mymodule:$user->rights->othermodule->read:/mymodule/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
@@ -378,6 +388,8 @@ class modeasya extends DolibarrModules
 		dolibarr_del_const($this->db,'MAIN_FONTAWESOME_WEIGHT');
 		dolibarr_del_const($this->db,'INFRASPACKPLUS_DISABLED_CORE_CHANGE');
 		dolibarr_del_const($this->db,'INFRASPACKPLUS_DISABLED_MODULE_CHANGE');
+		dolibarr_del_const($this->db,'OBLYON_DISABLE_VERSION');
+		dolibarr_del_const($this->db,'MAIN_MODULE_SETUP_ON_LIST_BY_DEFAULT');
 
 		return $this->_remove($sql, $options);
 	}
