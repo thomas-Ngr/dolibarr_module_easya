@@ -56,7 +56,7 @@ class modeasya extends DolibarrModules
         // It is used to group modules by family in module setup page
         $this->family = $family;
         // Module position in the family
-        $this->module_position = 500;
+        $this->module_position = 2;
         // Gives the possibility to the module, to provide his own family info and position of this family (Overwrite $this->family and $this->module_position. Avoid this)
         $this->familyinfo = array($family => array('position' => '001', 'label' => $langs->trans($family."Family")));
         // Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
@@ -65,10 +65,11 @@ class modeasya extends DolibarrModules
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
-		$this->description = "Module spécifique pour easya.";
+		$this->description = "Module spécifique pour Easya.";
 		$this->descriptionlong = "";
 		$this->editor_name = 'Open-DSI';
 		$this->editor_url = 'http://www.open-dsi.fr';
+        $this->editor_email	= 'support@open-dsi.fr';
 		
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
 		$this->version = '2022.5';
@@ -115,8 +116,8 @@ class modeasya extends DolibarrModules
 		$this->depends = array();		// List of modules id that must be enabled if this module is enabled
 		$this->requiredby = array();	// List of modules id to disable if this one is disabled
 		$this->conflictwith = array();	// List of modules id this module is in conflict with
-		$this->phpmin = array(5,6);					// Minimum version of PHP required by module
-		$this->need_dolibarr_version = array(5,0);	// Minimum version of Dolibarr required by module
+		$this->phpmin = array(7,0);					// Minimum version of PHP required by module
+		$this->need_dolibarr_version = array(14,0);	// Minimum version of Dolibarr required by module
 		$this->langfiles = array("easya@easya", "opendsi@easya");
         $langs->load('easya@easya');
 
@@ -240,11 +241,11 @@ class modeasya extends DolibarrModules
 		// 'user'             to add a tab in user view
         $this->tabs = array();
 
-            if (! isset($conf->easya) || ! isset($conf->easya->enabled))
-            {
-                $conf->easya=new stdClass();
-                $conf->easya->enabled=0;
-            }
+        if (! isset($conf->easya) || ! isset($conf->easya->enabled))
+        {
+            $conf->easya=new stdClass();
+            $conf->easya->enabled=0;
+        }
 
         // Dictionaries
 		$this->dictionaries=array();
@@ -379,8 +380,6 @@ class modeasya extends DolibarrModules
 	 */
 	public function remove($options = '')
 	{
-
-		// InfraS
 		dolibarr_del_const($this->db,'EASYA_VERSION');
 		dolibarr_del_const($this->db,'MAIN_FONTAWESOME_DIRECTORY');
 		dolibarr_del_const($this->db,'MAIN_FONTAWESOME_FAMILY');
@@ -388,7 +387,6 @@ class modeasya extends DolibarrModules
 		dolibarr_del_const($this->db,'MAIN_FONTAWESOME_WEIGHT');
 		dolibarr_del_const($this->db,'INFRASPACKPLUS_DISABLED_CORE_CHANGE');
 		dolibarr_del_const($this->db,'INFRASPACKPLUS_DISABLED_MODULE_CHANGE');
-		dolibarr_del_const($this->db,'OBLYON_DISABLE_VERSION');
 		dolibarr_del_const($this->db,'MAIN_MODULE_SETUP_ON_LIST_BY_DEFAULT');
 
 		return $this->_remove($sql, $options);
