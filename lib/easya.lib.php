@@ -54,4 +54,50 @@ function easya_prepare_head()
     return $head;
 }
 
+function setConstants($db, $const_array, $backup) {}
+
+class ConstantsCSVInput
+{
+    private $file_path;
+    private $lines;
+    private $const_array = [];
+
+    public function __construct($path) {
+        $this->file_path = $path;
+        $this->read();
+
+        // TODO filter lines input
+        //$this->checkLinesAreFine();
+    }
+
+    private function read() {
+        $this->lines = [];
+
+        if (($file = fopen($this->file_path, "r")) !== false) {
+            while (($line = fgetcsv($file)) !== false) {
+                $this->lines[] = $line;
+            }
+        }
+    }
+
+    public function getConstants() {
+        return $this->lines;
+        //return $this->const_array;
+    }
+
+    private function check_first_line() {}
+
+    private function line_fields_are_fine($line) {}
+}
+
+function includeRoot($dir, $search_file) {
+    if (is_file($dir . $search_file)) {
+        return $dir . $search_file;
+    } else {
+        $dir = dirname($dir);
+        return includeRoot($dir, $search_file);
+    }
+
+    //return is_file($search_file) ? $search_file : includeRoot("../" . $search_file);
+}
 
