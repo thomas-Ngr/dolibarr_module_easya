@@ -1,3 +1,4 @@
 name, entity, value, type, visible, note
-CONSTANTE, gf , "toto@toto.fr", , ,  
-truc, 0, truc, 2, 3, 4
+CONSTANTE, 0 , "toto@toto.fr", 0,0 ,  salut les copains
+truc, 0, truc, 2, 0, 4
+truc, 0, truc, 2,0 , 4
