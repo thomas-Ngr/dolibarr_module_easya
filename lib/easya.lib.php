@@ -59,20 +59,21 @@ function setConstants($db, $const_array, $backup) {}
 class ConstantsCSVInput
 {
     private $file_path;
-    private $lines;
-    private $const_array = [];
+    private $lines = [];
 
     public function __construct($path) {
         $this->file_path = $path;
         $this->read();
+        print $this->lines;
+        $this->checkAndRemoveFirstLine();
+        print $this->lines;
+        $this->line_fields_are_fine();
+        print $this->lines;
 
-        // TODO filter lines input
-        //$this->checkLinesAreFine();
+        return $this;
     }
 
     private function read() {
-        $this->lines = [];
-
         if (($file = fopen($this->file_path, "r")) !== false) {
             while (($line = fgetcsv($file)) !== false) {
                 $this->lines[] = $line;
@@ -82,12 +83,57 @@ class ConstantsCSVInput
 
     public function getConstants() {
         return $this->lines;
-        //return $this->const_array;
     }
 
-    private function check_first_line() {}
+    private function checkAndRemoveFirstLine() {
+        $first_line = $this->trim_values($this->lines[0]);
+        if ($first_line == ['name', 'entity', 'value', 'type', 'visible', 'note']) {
+            array_shift($this->lines);
+        }
+    }
 
-    private function line_fields_are_fine($line) {}
+    private function trim_values($string_array) {
+        $new_arr = [];
+        foreach($string_array as $string) {
+            $new_arr[] = trim($string);
+        }
+        return $new_arr;
+    }
+
+    private function line_fields_are_fine() {
+        foreach($this->lines as $key => $line) {
+            $line = $this->trim_values($line);
+            try {
+                // TODO real filters to prevent SQL and XSS
+                $line[0] = $this->checkNoSpace($line[0]);             // name
+                $line[1] = $this->checkAndFormatBoolInt($line[1]);     // entity
+                //$line[2] = $line[2];                      // value
+                $line[3] = $this->checkNoSpace($line[3]);                           // type -> should check that type exists
+                $line[4] = $this->checkAndFormatBoolInt($line[4]);     // visible
+                //$line[5] = $line[5];                       // note
+            } catch (Exception $e) {
+                $err_message  = $e->getMessage();
+                $err_message .= ' on line '.$key;
+                throw new Exception($err_message);
+            }
+            $this->lines[$key] = $line;
+        }
+    }
+
+    private function checkNoSpace($string) {
+        $string = trim($string);
+        if (strpos($string, " ") !== false) {
+            throw new Exception('moduleEasya: value "'. $string.'" contains a space');
+        }
+        return $string;
+    }
+
+    private function checkAndFormatBoolInt($value) {
+        if ($value !== 1 && $value !== 0 && $value !== '1' && $value !== '0') {
+            throw new Exception('moduleEasya: "'.$value.'" should be 0 or 1');
+        }
+        return (int) $value;
+    }
 }
 
 function includeRoot($dir, $search_file) {
