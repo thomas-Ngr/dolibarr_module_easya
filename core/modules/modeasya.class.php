@@ -363,7 +363,7 @@ class modeasya extends DolibarrModules
 	{
 	    global $conf, $langs;
 
-        //$this->_load_tables('/easya/sql/');
+        $this->_load_tables('/easya/sql/');
 
         $sql = array();
 
