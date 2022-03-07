@@ -1,4 +1,4 @@
 name, entity, value, type, visible, note
-CONSTANTE, 0 , "toto@toto.fr", 0,0 ,  salut les copains
-truc, 0, truc, 2, 0, 4
-truc, 0, truc, 2,0 , 4
+TEST_CONSTANTE, 0 , "toto@toto.fr", 0,0 ,  salut les copains
+TEST_truc, 0, truc, 2, 0, 4
+truc_TEST, 0, truc, 2,0 , 4

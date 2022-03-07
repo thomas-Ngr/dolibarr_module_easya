@@ -26,22 +26,24 @@ if (@file_exists($lockfile)) {
 	exit(1);
 }
 
-print __DIR__ . "\n";
-print DOL_DOCUMENT_ROOT . "\n";
+//print __DIR__ . "\n";
+//print DOL_DOCUMENT_ROOT . "\n";
 
 /*
  * Load constants file
  */
 $constants_file_path = realpath(__DIR__ . "/../constants_preset.csv");
-var_dump ($constants_file_path);
+//var_dump ($constants_file_path);
 
 $constants_file = new ConstantsCSVInput($constants_file_path);
-$constants = $constants_file->getConstants();
-var_dump($constants);
+$constants_values = $constants_file->getConstants();
+var_dump($constants_values);
 
 // dolibarr_set_const($db, $name, $value, $type = 'chaine', $visible = 0, $note = '', $entity = 1)
 
 /*
- * 
+ * Apply constants
  */
 
+$constants = new Constants($db, $constants_values);
+$constants->backupAndApply();

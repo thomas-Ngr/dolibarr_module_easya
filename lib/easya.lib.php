@@ -64,11 +64,8 @@ class ConstantsCSVInput
     public function __construct($path) {
         $this->file_path = $path;
         $this->read();
-        print $this->lines;
         $this->checkAndRemoveFirstLine();
-        print $this->lines;
         $this->line_fields_are_fine();
-        print $this->lines;
 
         return $this;
     }
@@ -105,12 +102,12 @@ class ConstantsCSVInput
             $line = $this->trim_values($line);
             try {
                 // TODO real filters to prevent SQL and XSS
-                $line[0] = $this->checkNoSpace($line[0]);             // name
-                $line[1] = $this->checkAndFormatBoolInt($line[1]);     // entity
-                //$line[2] = $line[2];                      // value
-                $line[3] = $this->checkNoSpace($line[3]);                           // type -> should check that type exists
-                $line[4] = $this->checkAndFormatBoolInt($line[4]);     // visible
-                //$line[5] = $line[5];                       // note
+                $line['name'] = $this->checkNoSpace($line[0]);             // name
+                $line['entity'] = $this->checkAndFormatBoolInt($line[1]);     // entity
+                $line['value'] = $line[2];                      // value
+                $line['type'] = $this->checkNoSpace($line[3]);                           // type -> should check that type exists
+                $line['visible'] = $this->checkAndFormatBoolInt($line[4]);     // visible
+                $line['note'] = $line[5];                       // note
             } catch (Exception $e) {
                 $err_message  = $e->getMessage();
                 $err_message .= ' on line '.$key;
@@ -133,6 +130,68 @@ class ConstantsCSVInput
             throw new Exception('moduleEasya: "'.$value.'" should be 0 or 1');
         }
         return (int) $value;
+    }
+}
+
+class Constants
+{
+    private static $backup_path = '/easya/const_backup';
+    private static $bak_file_prefix = 'backup_';
+    private $backup_file;
+    private $db;
+    private $const_list;
+
+    public function __construct($db, $const_list) {
+        $this->db = $db;
+        $this->const_list = $const_list;
+
+        $date = dol_print_date(dol_now(), 'dayhourxcard');
+        //$file_path = self::$backup_path .'/'.self::$bak_file_prefix . $date . '.csv.bak';
+        $this->backup_dir = DOL_DATA_ROOT . self::$backup_path;
+        $this->backup_file = $this->backup_dir .'/'.self::$bak_file_prefix . $date . '.csv.bak';
+
+        return $this;
+    }
+
+    public function backupAndApply() {
+        //$this->verifyAndWarn(); // Afficher un warning si entity ou visibility sont différentes !!
+        $this->backup();
+        $this->apply();
+    }
+
+    private function backup() {
+        print $this->backup_dir . "\n"; //self::$backup_path; //debug
+
+        // create dir if not exist
+        if (!is_dir($this->backup_dir)){
+            if (!mkdir($this->backup_dir, '0640', true )) {
+                throw new Exception ('Error module Easya: backup dir could not be created.');
+            }
+        }
+
+        if (($file = fopen($this->backup_file, "x")) !== false) {
+            foreach($this->const_list as $const) {
+                $line_length = fputcsv($file, array_values($const));
+                if (!$line_length) {
+                    throw new Exception("Error module Easya: line could not be written in file ".$this->backup_file." : ". array_values($const));
+                }
+                var_dump($const);
+            }
+        } else {
+            throw new Exception("Error module Easya: file ". $this->backup_file . " already exists or could not be created.");
+        }
+    }
+
+
+
+    private function apply() {
+        foreach($this->const_list as $const) {
+            var_dump($const);
+            $res = dolibarr_set_const($this->db, $const['name'], $const['value'], $const['type'], $const['visible'], $const['note'], $const['entity']);
+            if ($res !== 1) {
+                throw new Exception("Error module Easya: Constant could not be saved : " . $const);
+            }
+        }
     }
 }
 
