@@ -100,14 +100,17 @@ class ConstantsCSVInput
     private function line_fields_are_fine() {
         foreach($this->lines as $key => $line) {
             $line = $this->trim_values($line);
+            if (count($line) !== 6) {
+                throw new Exception("Error: module Easya: Constant line does not have 6 cells: " .$line[0]);
+            }
             try {
                 // TODO real filters to prevent SQL and XSS
-                $line['name'] = $this->checkNoSpace($line[0]);             // name
-                $line['entity'] = $this->checkAndFormatBoolInt($line[1]);     // entity
-                $line['value'] = $line[2];                      // value
-                $line['type'] = $this->checkNoSpace($line[3]);                           // type -> should check that type exists
-                $line['visible'] = $this->checkAndFormatBoolInt($line[4]);     // visible
-                $line['note'] = $line[5];                       // note
+                $line['name'] = $this->checkNoSpace($line[0]);
+                $line['entity'] = $this->checkAndFormatBoolInt($line[1]);
+                $line['value'] = $line[2];
+                $line['type'] = $this->checkNoSpace($line[3]);
+                $line['visible'] = $this->checkAndFormatBoolInt($line[4]);
+                $line['note'] = $line[5];
             } catch (Exception $e) {
                 $err_message  = $e->getMessage();
                 $err_message .= ' on line '.$key;
