@@ -150,47 +150,72 @@ class Constants
         $this->backup_dir = DOL_DATA_ROOT . self::$backup_path;
         $this->backup_file = $this->backup_dir .'/'.self::$bak_file_prefix . $date . '.csv.bak';
 
-        return $this;
-    }
-
-    public function backupAndApply() {
-        //$this->verifyAndWarn(); // Afficher un warning si entity ou visibility sont différentes !!
-        $this->backup();
-        $this->apply();
-    }
-
-    private function backup() {
-        print $this->backup_dir . "\n"; //self::$backup_path; //debug
-
-        // create dir if not exist
+        // create backup dir if not exist
         if (!is_dir($this->backup_dir)){
             if (!mkdir($this->backup_dir, '0640', true )) {
                 throw new Exception ('Error module Easya: backup dir could not be created.');
             }
         }
 
-        if (($file = fopen($this->backup_file, "x")) !== false) {
+        return $this;
+    }
+
+    public function backupAndApply() {
+        if (($backup_file = fopen($this->backup_file, "x")) !== false) {
             foreach($this->const_list as $const) {
-                $line_length = fputcsv($file, array_values($const));
-                if (!$line_length) {
-                    throw new Exception("Error module Easya: line could not be written in file ".$this->backup_file." : ". array_values($const));
-                }
-                var_dump($const);
+                $this->checkAndBackupLine($const, $backup_file);
+                $this->applyLine($const);
             }
         } else {
             throw new Exception("Error module Easya: file ". $this->backup_file . " already exists or could not be created.");
         }
+
     }
 
+    private function checkAndBackupLine($const, $backup_file) {
+        // fetch original const
+        $sql  = "SELECT *";
+        $sql .= " FROM ".MAIN_DB_PREFIX."const";
+        $sql .= " WHERE name = '".$this->db->sanitize($const['name'])."'";
 
-
-    private function apply() {
-        foreach($this->const_list as $const) {
-            var_dump($const);
-            $res = dolibarr_set_const($this->db, $const['name'], $const['value'], $const['type'], $const['visible'], $const['note'], $const['entity']);
-            if ($res !== 1) {
-                throw new Exception("Error module Easya: Constant could not be saved : " . $const);
+        $result = $this->db->query($sql);
+        if ($result) {
+            if ($this->db->num_rows($result) > 1) {
+                fclose($backup_file);
+                throw new Exception("Error: module Easya: There are two constants named ".$const['name'].". Please fix it.");
             }
+
+            while ($obj = $this->db->fetch_object($result)) {
+                // compare visible and entity
+                if ($obj->visible != $const['visible']) {
+                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different visibility '".$const['visible']."' than original one '".$obj->visible."'", E_USER_WARNING);
+                }
+                if ($obj->entity != $const['entity']) {
+                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different entity '".$const['entity']."' than original one '".$obj->entity."'", E_USER_WARNING);
+                }
+
+                // backup original const
+                $backup_line_arr = [
+                    $obj->name,
+                    $obj->entity,
+                    $obj->value,
+                    $obj->type,
+                    $obj->visible,
+                    $obj->note
+                ];
+                $line_length = fputcsv($backup_file, $backup_line_arr);
+                if (!$line_length) {
+                    fclose($backup_file);
+                    throw new Exception("Error module Easya: line could not be written in file ".$this->backup_file." : ". $backup_line_arr);
+                }
+            }
+        }
+    }
+
+    private function applyLine($const) {
+        $res = dolibarr_set_const($this->db, $const['name'], $const['value'], $const['type'], $const['visible'], $const['note'], $const['entity']);
+        if ($res !== 1) {
+            throw new Exception("Error module Easya: Constant could not be saved : " . $const);
         }
     }
 }
