@@ -26,20 +26,12 @@ if (@file_exists($lockfile)) {
 	exit(1);
 }
 
-//print __DIR__ . "\n";
-//print DOL_DOCUMENT_ROOT . "\n";
-
 /*
  * Load constants file
  */
 $constants_file_path = realpath(__DIR__ . "/../constants_preset.csv");
-//var_dump ($constants_file_path);
-
 $constants_file = new ConstantsCSVInput($constants_file_path);
 $constants_values = $constants_file->getConstants();
-var_dump($constants_values);
-
-// dolibarr_set_const($db, $name, $value, $type = 'chaine', $visible = 0, $note = '', $entity = 1)
 
 /*
  * Apply constants
@@ -47,3 +39,4 @@ var_dump($constants_values);
 
 $constants = new Constants($db, $constants_values);
 $constants->backupAndApply();
+print "module Easya: Constants successfuly applied.\n";
