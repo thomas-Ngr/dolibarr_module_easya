@@ -38,11 +38,13 @@ if (!$user->admin) accessforbidden();
 
 $action = GETPOST('action','alpha');
 
+$max_file_size = 3000;
 
 /*
  *	Actions
  */
 
+ /*
 if (preg_match('/set_(.*)/',$action,$reg))
 {
     $code=$reg[1];
@@ -68,6 +70,38 @@ if (preg_match('/set_(.*)/',$action,$reg))
         dol_print_error($db);
     }
 }
+*/
+
+if (!empty($_FILES) && !empty($_FILES['csv_input'])) {
+    // filter input files
+    $csv_input = $_FILES['csv_input'];
+    $err = 0;
+    if ($csv_input['size'] > $max_file_size) {
+        setEventMessage($langs->trans('TooLargeFile'), 'errors');
+        $err++;
+    }
+    // forbid any php file
+    if (preg_match("/<\?php/mi", file_get_contents($csv_input['tmp_name']))) {
+        setEventMessage($langs->trans('NoPhpFile'), 'errors');
+        $err++;
+    }
+    
+    if ($err == 0) {
+        // get content as array
+        try {
+            $constants_file = new ConstantsCSVInput($csv_input['tmp_name']);
+            $constants_values = $constants_file->getConstants();
+
+            if (analyseVarsForSqlAndScriptsInjection($constants_values, 0)) {
+                $constants = new Constants($db, $constants_values);
+                $constants->backupAndApply();
+                setEventMessage($langs->trans('ConstantsApplied'), 'mesg');
+            }
+        } catch (Exception $e) {
+            setEventMessage($e->getMessage(), 'errors');
+        }
+    }
+}
 
 
 /*
@@ -87,19 +121,37 @@ dol_fiche_head($head, 'settings', $langs->trans("Module501000Name"), 0, 'action'
 
 
 print '<br>';
-print '<form method="post" action="'.$_SERVER["PHP_SELF"].'">';
+print '<form method="post" action="'.$_SERVER["PHP_SELF"].'" enctype="multipart/form-data">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="set">';
+//print '<input type="hidden" name="action" value="set">';
 
-$var=true;
+//$var=true; // What is this used for !?
 
+print '<table class="noborder centpercent"><tbody>';
+
+print '<tr class="liste_titre">';
+print '<td colspan="3">'.$langs->trans("Configuration").'</td>';
+print "</tr>\n";
+
+print '<tr class="oddeven"> <td>';
+print '<label for="csv_input" >'.$langs->trans("LoadConfigurationFile").'</label>';
+print '</td><td class="right">';
+print '<input type="hidden" name="MAX_FILE_SIZE" value="'.$max_file_size.'" />';
+print '<input id="csv_input" name="csv_input" type="file" accept=".csv"></input>';
+print '</td><td>';
+print '<input type="submit" class="button" value="'.$langs->trans("Load").'">';
+print '</td> </tr>';
+
+print '<tbody><table>';
 
 dol_fiche_end();
 
+/*
 print '<br>';
 print '<div align="center">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
 print '</div>';
+*/
 
 print '</form>';
 
