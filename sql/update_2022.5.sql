@@ -8,3 +8,5 @@ ALTER TABLE llx_c_country MODIFY COLUMN eec tinyint DEFAULT 0 NOT NULL;
 -- Add option for SEPA formatting
 ALTER TABLE llx_bank_account ADD COLUMN pti_in_ctti integer DEFAULT 0 AFTER domiciliation;
 
+-- keep the last msg sent to display warnings on ticket list
+ALTER TABLE llx_ticket ADD COLUMN date_last_msg_sent datetime AFTER date_read;
