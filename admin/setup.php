@@ -95,7 +95,7 @@ if (!empty($_FILES) && !empty($_FILES['csv_input'])) {
             if (analyseVarsForSqlAndScriptsInjection($constants_values, 0)) {
                 $constants = new Constants($db, $constants_values);
                 $constants->backupAndApply();
-                setEventMessage($langs->trans('ConstantsApplied'), 'mesg');
+                setEventMessage($langs->trans('ConstantsApplied'), 'mesgs');
             }
         } catch (Exception $e) {
             setEventMessage($e->getMessage(), 'errors');
