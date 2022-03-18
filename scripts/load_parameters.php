@@ -29,7 +29,18 @@ if (@file_exists($lockfile)) {
 /*
  * Load constants file
  */
-$constants_file_path = realpath(__DIR__ . "/../constants_preset.csv");
+
+if (count($argv) !== 2) {
+	print("module Easya: ERROR:\nThis script expects a file for constant input.\nPlease provide a csv file.\n");
+	exit(1);
+}
+
+$constants_file_path = realpath($argv[1]);
+if (!$constants_file_path) {
+	print "module Easya: ERROR:\nThe provided file does not exist. Please check the file exists.\nProvided file path: " . $argv[1] . "\n";
+	exit(1);
+}
+
 $constants_file = new ConstantsCSVInput($constants_file_path);
 $constants_values = $constants_file->getConstants();
 
