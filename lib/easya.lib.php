@@ -139,7 +139,7 @@ class ConstantsCSVInput
 
 class Constants
 {
-    private static $backup_path = '/easya/const_backup';
+    public static $backup_dir = DOL_DATA_ROOT . '/easya/const_backup';
     private static $bak_file_prefix = 'backup_';
     private $backup_file;
     private $db;
@@ -151,12 +151,12 @@ class Constants
 
         $date = dol_print_date(dol_now(), 'dayhourxcard');
         //$file_path = self::$backup_path .'/'.self::$bak_file_prefix . $date . '.csv.bak';
-        $this->backup_dir = DOL_DATA_ROOT . self::$backup_path;
-        $this->backup_file = $this->backup_dir .'/'.self::$bak_file_prefix . $date . '.csv.bak';
+        //$this->backup_dir = DOL_DATA_ROOT . self::$backup_path;
+        $this->backup_file = self::$backup_dir .'/'.self::$bak_file_prefix . $date . '.csv.bak';
 
         // create backup dir if not exist
-        if (!is_dir($this->backup_dir)){
-            if (!mkdir($this->backup_dir, '0640', true )) {
+        if (!is_dir(self::$backup_dir)){
+            if (!mkdir(self::$backup_dir, '0640', true )) {
                 throw new Exception ('Error module Easya: backup dir could not be created.');
             }
         }

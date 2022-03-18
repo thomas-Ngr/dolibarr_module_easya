@@ -38,7 +38,11 @@ if (!$user->admin) accessforbidden();
 
 $action = GETPOST('action','alpha');
 
+/*
+ * Constant values
+ */
 $max_file_size = 3000;
+
 
 /*
  *	Actions
@@ -72,6 +76,19 @@ if (preg_match('/set_(.*)/',$action,$reg))
 }
 */
 
+// Get backup files 
+$backup_dir = dir(Constants::$backup_dir);
+$backup_files_path = array();
+while ($path = $backup_dir->read()) {
+    $backup_files_path[] = $path;
+}
+// remove . and .. dirs
+array_shift($backup_files_path);
+$backup_files_path[0] = '';
+
+//var_dump($backup_files_path);die;
+
+// Deal with uploaded CSV constant files
 if (!empty($_FILES) && !empty($_FILES['csv_input'])) {
     // filter input files
     $csv_input = $_FILES['csv_input'];
