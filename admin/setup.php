@@ -28,6 +28,7 @@ if (! $res && file_exists("../../main.inc.php")) $res=@include '../../main.inc.p
 if (! $res && file_exists("../../../main.inc.php")) $res=@include '../../../main.inc.php';		// to work if your module directory is into a subdir of root htdocs directory
 if (! $res) die("Include of main fails");
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT."/core/class/html.form.class.php";
 dol_include_once('/easya/lib/easya.lib.php');
 
 $langs->load("admin");
@@ -37,6 +38,7 @@ $langs->load("opendsi@easya");
 if (!$user->admin) accessforbidden();
 
 $action = GETPOST('action','alpha');
+$backup_file_choice = GETPOST('csv_backup', 'int');
 
 /*
  * Constant values
@@ -76,6 +78,14 @@ if (preg_match('/set_(.*)/',$action,$reg))
 }
 */
 
+// abort if two values are sent
+if (!empty($backup_file_choice) && !empty($_FILES['csv_input']["name"])) {
+    $url_to_redirect = $_SERVER['REQUEST_URI'];
+    setEventMessage($langs->trans('ManyValuesSent'), 'errors');
+    header('Location: '.$url_to_redirect);
+    exit(1);
+}
+
 // Get backup files 
 $backup_dir = dir(Constants::$backup_dir);
 $backup_files_path = array();
@@ -86,15 +96,26 @@ while ($path = $backup_dir->read()) {
 array_shift($backup_files_path);
 $backup_files_path[0] = '';
 
-//var_dump($backup_files_path);die;
+// If user has chosen a backup file
+if (!empty($backup_file_choice)) {
+    if (!empty($backup_files_path[$backup_file_choice])) {
+        $file_to_load = Constants::$backup_dir .'/'. $backup_files_path[$backup_file_choice];
+    } else {
+        setEventMessage($langs->trans('BackupIndexDoesNotexist'), 'errors');
+        $err++;
+    }
+}
 
 // Deal with uploaded CSV constant files
-if (!empty($_FILES) && !empty($_FILES['csv_input'])) {
-    // filter input files
+if (!empty($_FILES['csv_input']["name"])) {
     $csv_input = $_FILES['csv_input'];
     $err = 0;
     if ($csv_input['size'] > $max_file_size) {
         setEventMessage($langs->trans('TooLargeFile'), 'errors');
+        $err++;
+    }
+    if ($csv_input['type'] != "text/csv" ) {
+        setEventMessage($langs->trans('PleaseProvideCSV'), 'errors');
         $err++;
     }
     // forbid any php file
@@ -102,21 +123,24 @@ if (!empty($_FILES) && !empty($_FILES['csv_input'])) {
         setEventMessage($langs->trans('NoPhpFile'), 'errors');
         $err++;
     }
-    
-    if ($err == 0) {
-        // get content as array
-        try {
-            $constants_file = new ConstantsCSVInput($csv_input['tmp_name']);
-            $constants_values = $constants_file->getConstants();
+    //set constants file
+    if ($err == 0) $file_to_load = $csv_input['tmp_name'];
+}
 
-            if (analyseVarsForSqlAndScriptsInjection($constants_values, 0)) {
-                $constants = new Constants($db, $constants_values);
-                $constants->backupAndApply();
-                setEventMessage($langs->trans('ConstantsApplied'), 'mesgs');
-            }
-        } catch (Exception $e) {
-            setEventMessage($e->getMessage(), 'errors');
+// Load constants
+if ($err == 0 && !empty($file_to_load)) {
+    // get content as array
+    try {
+        $constants_file = new ConstantsCSVInput($csv_input['tmp_name']);
+        $constants_values = $constants_file->getConstants();
+
+        if (analyseVarsForSqlAndScriptsInjection($constants_values, 0)) {
+            $constants = new Constants($db, $constants_values);
+            $constants->backupAndApply();
+            setEventMessage($langs->trans('ConstantsApplied'), 'mesgs');
         }
+    } catch (Exception $e) {
+        setEventMessage($e->getMessage(), 'errors');
     }
 }
 
@@ -133,6 +157,7 @@ print load_fiche_titre($langs->trans("EasyaSetup"),$linkback,'title_setup');
 print "<br>\n";
 
 $head=easya_prepare_head();
+$form = new Form($db);
 
 dol_fiche_head($head, 'settings', $langs->trans("Module501000Name"), 0, 'action');
 
@@ -155,11 +180,19 @@ print '<label for="csv_input" >'.$langs->trans("LoadConfigurationFile").'</label
 print '</td><td class="right">';
 print '<input type="hidden" name="MAX_FILE_SIZE" value="'.$max_file_size.'" />';
 print '<input id="csv_input" name="csv_input" type="file" accept=".csv"></input>';
-print '</td><td>';
-print '<input type="submit" class="button" value="'.$langs->trans("Load").'">';
-print '</td> </tr>';
+print '</td></tr>';
+
+print '<tr class="oddeven"> <td>';
+print '<label for="csv_backup" >'.$langs->trans("LoadBackupFile").'</label>';
+print '</td><td class="right">';
+print $form->selectarray('csv_backup', $backup_files_path);
+print '</td></tr>';
 
 print '<tbody><table>';
+
+print '<div class="center">';
+print '<input type="submit" class="button" value="'.$langs->trans("Load").'">';
+print '</div>';
 
 dol_fiche_end();
 
