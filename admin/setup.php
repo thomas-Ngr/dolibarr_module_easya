@@ -87,11 +87,7 @@ if (!empty($backup_file_choice) && !empty($_FILES['csv_input']["name"])) {
 }
 
 // Get backup files 
-$backup_dir = dir(Constants::$backup_dir);
-$backup_files_path = array();
-while ($path = $backup_dir->read()) {
-    $backup_files_path[] = $path;
-}
+$backup_files_path = scandir(Constants::$backup_dir);
 // remove . and .. dirs
 array_shift($backup_files_path);
 $backup_files_path[0] = '';
@@ -131,7 +127,7 @@ if (!empty($_FILES['csv_input']["name"])) {
 if ($err == 0 && !empty($file_to_load)) {
     // get content as array
     try {
-        $constants_file = new ConstantsCSVInput($csv_input['tmp_name']);
+        $constants_file = new ConstantsCSVInput($file_to_load);
         $constants_values = $constants_file->getConstants();
 
         if (analyseVarsForSqlAndScriptsInjection($constants_values, 0)) {

@@ -149,7 +149,7 @@ class Constants
         $this->db = $db;
         $this->const_list = $const_list;
 
-        $date = dol_print_date(dol_now(), 'dayhourxcard');
+        $date = dol_print_date(dol_now(), "%Y-%m-%d_%H-%M");//'dayhourxcard');
         //$file_path = self::$backup_path .'/'.self::$bak_file_prefix . $date . '.csv.bak';
         //$this->backup_dir = DOL_DATA_ROOT . self::$backup_path;
         $this->backup_file = self::$backup_dir .'/'.self::$bak_file_prefix . $date . '.csv.bak';
