@@ -100,23 +100,24 @@ class ConstantsCSVInput
     private function line_fields_are_fine() {
         foreach($this->lines as $key => $line) {
             $line = $this->trim_values($line);
+            $line_with_keys = array();
             if (count($line) !== 6) {
                 throw new Exception("Error: module Easya: Constant line does not have 6 cells: " .$line[0]);
             }
             try {
                 // TODO real filters to prevent SQL and XSS
-                $line['name'] = $this->checkNoSpace($line[0]);
-                $line['entity'] = $this->checkAndFormatBoolInt($line[1]);
-                $line['value'] = $line[2];
-                $line['type'] = $this->checkNoSpace($line[3]);
-                $line['visible'] = $this->checkAndFormatBoolInt($line[4]);
-                $line['note'] = $line[5];
+                $line_with_keys['name'] = $this->checkNoSpace($line[0]);
+                $line_with_keys['entity'] = $this->checkAndFormatBoolInt($line[1]);
+                $line_with_keys['value'] = ($line[2] === "NULL") ? null : $line[2];
+                $line_with_keys['type'] = $this->checkNoSpace($line[3]);
+                $line_with_keys['visible'] = $this->checkAndFormatBoolInt($line[4]);
+                $line_with_keys['note'] = $line[5];
             } catch (Exception $e) {
                 $err_message  = $e->getMessage();
                 $err_message .= ' on line '.$key;
                 throw new Exception($err_message);
             }
-            $this->lines[$key] = $line;
+            $this->lines[$key] = $line_with_keys;
         }
     }
 
@@ -188,7 +189,8 @@ class Constants
                 throw new Exception("Error: module Easya: There are two constants named ".$const['name'].". Please fix it.");
             }
 
-            while ($obj = $this->db->fetch_object($result)) {
+            // No need to do a while loop since there is 0 to 1 rows in the result
+            if ($obj = $this->db->fetch_object($result)) {
                 // compare visible and entity
                 if ($obj->visible != $const['visible']) {
                     trigger_error("Warning: module Easya: New constant ".$const['name']."has a different visibility '".$const['visible']."' than original one '".$obj->visible."'", E_USER_WARNING);
@@ -206,11 +208,17 @@ class Constants
                     $obj->visible,
                     $obj->note
                 ];
-                $line_length = fputcsv($backup_file, $backup_line_arr);
-                if (!$line_length) {
-                    fclose($backup_file);
-                    throw new Exception("Error module Easya: line could not be written in file ".$this->backup_file." : ". $backup_line_arr);
-                }
+            } else {
+                // backup a const with current name and NULL value
+                $backup_line_arr = array_values($const);
+                $backup_line_arr[1] = 0;            //entity
+                $backup_line_arr[2] = "NULL";       //value
+                $backup_line_arr[3] = "chaine";          //type
+            }
+            $line_length = fputcsv($backup_file, $backup_line_arr);
+            if (!$line_length) {
+                fclose($backup_file);
+                throw new Exception("Error module Easya: line could not be written in file ".$this->backup_file." : ". $backup_line_arr);
             }
         }
     }
