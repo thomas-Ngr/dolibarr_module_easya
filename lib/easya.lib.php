@@ -235,15 +235,3 @@ class Constants
         return (php_sapi_name() == "cli") ? 0 : (int) $conf->entity;
     }
 }
-
-function includeRoot($dir, $search_file) {
-    if (is_file($dir . $search_file)) {
-        return $dir . $search_file;
-    } else {
-        $dir = dirname($dir);
-        return includeRoot($dir, $search_file);
-    }
-
-    //return is_file($search_file) ? $search_file : includeRoot("../" . $search_file);
-}
-
