@@ -72,7 +72,7 @@ class modeasya extends DolibarrModules
         $this->editor_email	= 'support@open-dsi.fr';
 		
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
-		$this->version = '2022.5';
+		$this->version = '2022.5.1';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		// Name of image file used for this module.
@@ -132,7 +132,7 @@ class modeasya extends DolibarrModules
 		$r ++;
 		$this->const [$r] [0] = "EASYA_VERSION";
 		$this->const [$r] [1] = "chaine";
-		$this->const [$r] [2] = "2022.5";
+		$this->const [$r] [2] = "2022.5.1";
 		$this->const [$r] [3] = 0;
 		$this->const [$r] [4] = 1;
 		$this->const [$r] [5] = 'all';
