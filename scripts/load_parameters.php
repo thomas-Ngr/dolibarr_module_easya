@@ -1,4 +1,8 @@
 <?php
+if (php_sapi_name() != "cli") {
+	throw new Error("This script should be executed in CLI. Have a good day.", 400);
+	die;
+}
 
 // find master.inc.php
 $master_inc = 'master.inc.php';
@@ -16,8 +20,8 @@ $conf = new Conf();
 $lockfile = DOL_DATA_ROOT.'/install.lock';
 if (constant('DOL_DATA_ROOT') === null) {
 	// We don't have a configuration file yet
-	// Try to detect any lockfile in the default documents path
-	$lockfile = '../../../documents/install.lock';
+	print "ERROR: DOL_DATA_ROOT is not set. The configuration file does not exist. Please install Dolibarr.";
+	exit(1);
 }
 if (@file_exists($lockfile)) {
 	print "The install.lock file is set.\n";

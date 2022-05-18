@@ -193,10 +193,10 @@ class Constants
             if ($obj = $this->db->fetch_object($result)) {
                 // compare visible and entity
                 if ($obj->visible != $const['visible']) {
-                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different visibility '".$const['visible']."' than original one '".$obj->visible."'", E_USER_WARNING);
+                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different visibility '".$const['visible']."' than original one '".$obj->visible."'.", E_USER_WARNING);
                 }
                 if ($obj->entity != $const['entity']) {
-                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different entity '".$const['entity']."' than original one '".$obj->entity."'", E_USER_WARNING);
+                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different entity '".$const['entity']."' than original one '".$obj->entity."'. If you are setting a new constants for an entity, this is normal.", E_USER_WARNING);
                 }
 
                 // backup original const
@@ -211,9 +211,9 @@ class Constants
             } else {
                 // backup a const with current name and NULL value
                 $backup_line_arr = array_values($const);
-                $backup_line_arr[1] = 0;            //entity
-                $backup_line_arr[2] = "NULL";       //value
-                $backup_line_arr[3] = "chaine";          //type
+                //$backup_line_arr[1] = $const['entity'];     //entity
+                $backup_line_arr[2] = "NULL";               //value
+                $backup_line_arr[3] = "chaine";             //type
             }
             $line_length = fputcsv($backup_file, $backup_line_arr);
             if (!$line_length) {
