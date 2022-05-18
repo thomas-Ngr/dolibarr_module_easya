@@ -58,6 +58,7 @@ function setConstants($db, $const_array, $backup) {}
 
 class ConstantsCSVInput
 {
+    public static $LINE_CELL_NUMBER = 5;
     private $file_path;
     private $lines = [];
 
@@ -84,7 +85,7 @@ class ConstantsCSVInput
 
     private function checkAndRemoveFirstLine() {
         $first_line = $this->trim_values($this->lines[0]);
-        if ($first_line == ['name', 'entity', 'value', 'type', 'visible', 'note']) {
+        if ($first_line == ['name', 'value', 'type', 'visible', 'note']) {
             array_shift($this->lines);
         }
     }
@@ -101,17 +102,16 @@ class ConstantsCSVInput
         foreach($this->lines as $key => $line) {
             $line = $this->trim_values($line);
             $line_with_keys = array();
-            if (count($line) !== 6) {
-                throw new Exception("Error: module Easya: Constant line does not have 6 cells: " .$line[0]);
+            if (count($line) !== self::$LINE_CELL_NUMBER) {
+                throw new Exception("Error: module Easya: Constant line does not have ".self::$LINE_CELL_NUMBER." cells: " .$line[0]);
             }
             try {
                 // TODO real filters to prevent SQL and XSS
                 $line_with_keys['name'] = $this->checkNoSpace($line[0]);
-                $line_with_keys['entity'] = $this->checkAndFormatBoolInt($line[1]);
-                $line_with_keys['value'] = ($line[2] === "NULL") ? null : $line[2];
-                $line_with_keys['type'] = $this->checkNoSpace($line[3]);
-                $line_with_keys['visible'] = $this->checkAndFormatBoolInt($line[4]);
-                $line_with_keys['note'] = $line[5];
+                $line_with_keys['value'] = ($line[1] === "NULL") ? null : $line[1];
+                $line_with_keys['type'] = $this->checkNoSpace($line[2]);
+                $line_with_keys['visible'] = $this->checkAndFormatBoolInt($line[3]);
+                $line_with_keys['note'] = $line[4];
             } catch (Exception $e) {
                 $err_message  = $e->getMessage();
                 $err_message .= ' on line '.$key;
@@ -148,11 +148,12 @@ class Constants
     public function __construct($db, $const_list) {
         $this->db = $db;
         $this->const_list = $const_list;
+        $entity = $this->getConstEntity();
 
         $date = dol_print_date(dol_now(), "%Y-%m-%d_%H-%M");//'dayhourxcard');
         //$file_path = self::$backup_path .'/'.self::$bak_file_prefix . $date . '.csv.bak';
         //$this->backup_dir = DOL_DATA_ROOT . self::$backup_path;
-        $this->backup_file = self::$backup_dir .'/'.self::$bak_file_prefix . $date . '.csv.bak';
+        $this->backup_file = self::$backup_dir .'/'.self::$bak_file_prefix . "entity-" . $entity ."_" . $date . '.csv.bak';
 
         // create backup dir if not exist
         if (!is_dir(self::$backup_dir)){
@@ -173,14 +174,16 @@ class Constants
         } else {
             throw new Exception("Error module Easya: file ". $this->backup_file . " already exists or could not be created.");
         }
-
     }
 
     private function checkAndBackupLine($const, $backup_file) {
+        $entity = $this->getConstEntity();
+
         // fetch original const
         $sql  = "SELECT *";
         $sql .= " FROM ".MAIN_DB_PREFIX."const";
         $sql .= " WHERE name = '".$this->db->sanitize($const['name'])."'";
+        $sql .= " AND entity = " . $entity;
 
         $result = $this->db->query($sql);
         if ($result) {
@@ -191,18 +194,14 @@ class Constants
 
             // No need to do a while loop since there is 0 to 1 rows in the result
             if ($obj = $this->db->fetch_object($result)) {
-                // compare visible and entity
+                // compare visible
                 if ($obj->visible != $const['visible']) {
                     trigger_error("Warning: module Easya: New constant ".$const['name']."has a different visibility '".$const['visible']."' than original one '".$obj->visible."'.", E_USER_WARNING);
-                }
-                if ($obj->entity != $const['entity']) {
-                    trigger_error("Warning: module Easya: New constant ".$const['name']."has a different entity '".$const['entity']."' than original one '".$obj->entity."'. If you are setting a new constants for an entity, this is normal.", E_USER_WARNING);
                 }
 
                 // backup original const
                 $backup_line_arr = [
                     $obj->name,
-                    $obj->entity,
                     $obj->value,
                     $obj->type,
                     $obj->visible,
@@ -211,9 +210,8 @@ class Constants
             } else {
                 // backup a const with current name and NULL value
                 $backup_line_arr = array_values($const);
-                //$backup_line_arr[1] = $const['entity'];     //entity
-                $backup_line_arr[2] = "NULL";               //value
-                $backup_line_arr[3] = "chaine";             //type
+                $backup_line_arr[1] = "NULL";               //value
+                $backup_line_arr[2] = "chaine";             //type
             }
             $line_length = fputcsv($backup_file, $backup_line_arr);
             if (!$line_length) {
@@ -224,10 +222,17 @@ class Constants
     }
 
     private function applyLine($const) {
-        $res = dolibarr_set_const($this->db, $const['name'], $const['value'], $const['type'], $const['visible'], $const['note'], $const['entity']);
+        $entity = $this->getConstEntity();
+
+        $res = dolibarr_set_const($this->db, $const['name'], $const['value'], $const['type'], $const['visible'], $const['note'], $entity);
         if ($res !== 1) {
             throw new Exception("Error module Easya: Constant could not be saved : " . $const);
         }
+    }
+
+    private function getConstEntity() {
+        global $conf;
+        return (php_sapi_name() == "cli") ? 0 : (int) $conf->entity;
     }
 }
 
