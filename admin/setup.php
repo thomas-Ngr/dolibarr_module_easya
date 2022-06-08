@@ -50,34 +50,6 @@ $max_file_size = 3000;
  *	Actions
  */
 
- /*
-if (preg_match('/set_(.*)/',$action,$reg))
-{
-    $code=$reg[1];
-    $value=(GETPOST($code) ? GETPOST($code) : 1);
-    if (dolibarr_set_const($db, $code, $value, 'chaine', 0, '', $conf->entity) > 0)
-    {
-        Header("Location: ".$_SERVER["PHP_SELF"]);
-        exit;
-    }
-    else
-    {
-        dol_print_error($db);
-    }
-} elseif (preg_match('/del_(.*)/',$action,$reg)) {
-    $code=$reg[1];
-    if (dolibarr_del_const($db, $code, $conf->entity) > 0)
-    {
-        Header("Location: ".$_SERVER["PHP_SELF"]);
-        exit;
-    }
-    else
-    {
-        dol_print_error($db);
-    }
-}
-*/
-
 // abort if two values are sent
 if (!empty($backup_file_choice) && !empty($_FILES['csv_input']["name"])) {
     $url_to_redirect = $_SERVER['REQUEST_URI'];
@@ -88,7 +60,6 @@ if (!empty($backup_file_choice) && !empty($_FILES['csv_input']["name"])) {
 
 // Get backup files 
 $backup_files_path = scandir(Constants::$backup_dir);
-// remove . and .. dirs
 array_shift($backup_files_path);
 $backup_files_path[0] = '';
 
@@ -145,6 +116,10 @@ if ($err == 0 && !empty($file_to_load)) {
  *	View
  */
 
+// Get backup files 
+$backup_files_path = scandir(Constants::$backup_dir);
+array_shift($backup_files_path);
+$backup_files_path[0] = '';
 
 llxHeader();
 
