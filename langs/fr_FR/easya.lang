@@ -7,3 +7,5 @@ Module501000Desc = Module spécifique pour easya
 # Configuration admin
 #######################################################################
 easyaSetup                            = Configuration du module easya
+LoadConfigurationFile                 = Charger un fichier CSV de configuration
+LoadBackupFile                        = Restaurer un fichier de backup
