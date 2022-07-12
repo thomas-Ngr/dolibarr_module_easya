@@ -1,3 +1,3 @@
-name, value, type, visible, note
-TEST_CONSTANTE_1, "toto@toto.fr", chaine,1 ,  "une belle description"
-TEST_CONSTANTE_2, 2, chaine, 0, 'une autre description'
+name,value,type,visible,note
+EXAMPLE_CONSTANTE_1,"a.value@email.net",chaine,1 ,"an email"
+EXAMPLE_CONSTANTE_2,2,chaine,0,'an integer value'

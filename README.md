@@ -15,6 +15,6 @@ Ou depuis l'interface admin de Easya, dans ce cas les constantes seront appliqu�
 
 Voici un exemple de fichier CSV (la première ligne peut être conservée. "type" est le plus souvent "chaine"):
 ```
-name, value, type, visible, note
-OBLYON_COLOR_TOPMENU_BCKGRD, #eb4c42, chaine, 1, "test color"
+name,value,type,visible,note
+OBLYON_COLOR_TOPMENU_BCKGRD,#eb4c42,chaine,1,"test color"
 ```
