@@ -43,8 +43,7 @@ $backup_file_choice = GETPOST('csv_backup', 'int');
 /*
  * Constant values
  */
-$max_file_size = 3000;
-
+$max_file_size = 5242880;
 
 /*
  *	Actions
@@ -149,7 +148,6 @@ print "</tr>\n";
 print '<tr class="oddeven"> <td>';
 print '<label for="csv_input" >'.$langs->trans("LoadConfigurationFile").'</label>';
 print '</td><td class="right">';
-print '<input type="hidden" name="MAX_FILE_SIZE" value="'.$max_file_size.'" />';
 print '<input id="csv_input" name="csv_input" type="file" accept=".csv"></input>';
 print '</td></tr>';
 
